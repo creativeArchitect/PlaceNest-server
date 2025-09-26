@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -8,7 +8,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Application_Status {
+enum ApplicationStatus {
   PENDING
   ACCEPTED
   REJECTED
@@ -51,54 +51,76 @@ enum Year {
   FOURTH
 }
 
-enum Application_Mode {
+enum ApplicationMode {
   OFFLINE
   ONLINE
 }
 
 model User {
-  id               String        @id @default(uuid())
-  name             String
-  email            String        @unique
-  phone            String        @unique
-  password         String
-  branch           Branch?
-  year             Year?
-  cgpa             Decimal?      @db.Decimal(3, 2)
-  activeBacklog   Boolean?
-  backlogs         Int?
-  isVerified       Boolean       @default(false)
-  resumeUrl        String?
-  profileCompleted Boolean       @default(false)
-  role             Role
-  industy          String?
-  description      String?
-  website          String?       @unique
-  founded          String?
-  linkedin         String?       @unique
-  application      Application[]
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  phone    String @unique
+  password String
+  role     Role
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Company {
+  id          String @id @default(uuid())
+  name        String
+  email       String
+  industry    String
+  description String
+  website     String
+  founded     String
+  linkedin    String
+  location    String
 
   jobs Job[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([branch, year])
+  @@index([name, industry, email])
 }
 
-model Application {
-  id     String             @id @default(uuid())
-  status Application_Status @default(PENDING)
-  mode   Application_Mode
-  jobId  String
-  job    Job                @relation(fields: [jobId], references: [id])
-  userId String
-  user   User               @relation(fields: [userId], references: [id])
+model Student {
+  id               String        @id @default(uuid())
+  name             String
+  email            String        @unique
+  phone            String        @unique
+  branch           Branch?
+  year             Year?
+  cgpa             Decimal?      @db.Decimal(3, 2)
+  activeBacklog    Boolean?
+  backlogs         Int?
+  isVerified       Boolean       @default(false)
+  resumeUrl        String?
+  profileCompleted Boolean       @default(false)
+  application      Application[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@index([branch, year, phone, email])
+}
 
-  @@unique([jobId, userId])
+model Coordinator {
+  id               String   @id @default(uuid())
+  name             String
+  email            String   @unique
+  phone            String   @unique
+  password         String
+  branch           Branch?
+  year             Year?
+  cgpa             Decimal? @db.Decimal(3, 2)
+  activeBacklog    Boolean?
+  backlogs         Int?
+  isVerified       Boolean  @default(false)
+  resumeUrl        String?
+  profileCompleted Boolean  @default(false)
+
+  @@index([branch, year, phone, email])
 }
 
 model Job {
@@ -106,7 +128,7 @@ model Job {
   type        JobType
   title       String
   description String
-  position    String
+  role        String
   location    String
   package     String
   cgpaCutOff  Decimal   @db.Decimal(3, 2)
@@ -114,11 +136,27 @@ model Job {
   status      JobStatus @default(ACTIVE)
 
   companyId String
-  company   User   @relation(fields: [companyId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id])
 
   application Application[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  @@index([deadline])
+  @@index([status, deadline, companyId])
+}
+
+model Application {
+  id     String            @id @default(uuid())
+  status ApplicationStatus @default(PENDING)
+  mode   ApplicationMode
+
+  jobId     String
+  job       Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([jobId, studentId])
 }

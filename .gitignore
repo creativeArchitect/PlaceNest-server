@@ -1,5 +1,47 @@
-node_modules
-# Keep environment variables out of version control
-.env
+# Node modules
+node_modules/
 
-/generated/prisma
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.*
+
+# Prisma generated folder (if you generate into /src/generated/prisma)
+src/generated/prisma/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+build/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional: ignore coverage reports
+coverage/
+
+# Optional: ignore database files (e.g., for SQLite)
+*.db
+*.sqlite
+
+# Optional: ignore package-lock if using yarn, or vice versa
+package-lock.json
+# yarn.lock
+
+# Optional: Prisma migrations (if you want to exclude them — usually you don't!)
+# prisma/migrations/
