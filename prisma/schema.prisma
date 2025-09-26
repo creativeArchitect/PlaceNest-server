@@ -65,7 +65,7 @@ model User {
   branch           Branch?
   year             Year?
   cgpa             Decimal?      @db.Decimal(3, 2)
-  active_backlog   Boolean?
+  activeBacklog   Boolean?
   backlogs         Int?
   isVerified       Boolean       @default(false)
   resumeUrl        String?
