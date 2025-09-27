@@ -80,6 +80,10 @@ model Company {
   linkedin    String
   location    String
 
+  isVerified       Boolean       @default(false)
+  verifiedById  String
+  coordinator Coordinator @relation(fields: [verifiedById], references: [id])
+
   jobs Job[]
 
   createdAt DateTime @default(now())
@@ -98,10 +102,13 @@ model Student {
   cgpa             Decimal?      @db.Decimal(3, 2)
   activeBacklog    Boolean?
   backlogs         Int?
-  isVerified       Boolean       @default(false)
   resumeUrl        String?
   profileCompleted Boolean       @default(false)
   application      Application[]
+
+  isVerified       Boolean       @default(false)
+  verifiedById  String
+  coordinator Coordinator @relation(fields: [verifiedById], references: [id])
 
   @@index([branch, year, phone, email])
 }
@@ -116,9 +123,12 @@ model Coordinator {
   cgpa             Decimal? @db.Decimal(3, 2)
   activeBacklog    Boolean?
   backlogs         Int?
-  isVerified       Boolean  @default(false)
+  isVerified       Boolean       @default(false)
   resumeUrl        String?
   profileCompleted Boolean  @default(false)
+
+  student Student[]
+  company Company[]
 
   @@index([branch, year, phone, email])
 }
@@ -138,6 +148,7 @@ model Job {
   companyId String
   company   Company @relation(fields: [companyId], references: [id])
 
+  jobEligibility  JobEligibility[]
   application Application[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -159,4 +170,12 @@ model Application {
   updatedAt DateTime @updatedAt
 
   @@unique([jobId, studentId])
+}
+
+model JobEligibility {
+  id      String @id @default(uuid())
+  branch  Branch?
+  minYear Year?
+  jobId   String
+  job     Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
 }
