@@ -18,54 +18,94 @@ export const getProfile = async (
     }
     
     if(user.role === 'COMPANY'){
+      const companyProfile = await prisma.company.findFirst({
+        where: {
+          email: user.email,
+          phone: user.phone
+        }
+      });
+
+      if(!companyProfile){
+        res.status(404).json({
+          success: false,
+          message: "Company profile doesn't exists."
+        })
+      }
+    
         res.status(200).json({
             success: true,
             message: "Your profile got successfully",
             data: {
-              id: user?.id,
-              email: user?.email,
-              role: user?.role,
-              branch: user?.branch,
-              year: user?.year,
-              cgpa: user?.cgpa,
-              activeBacklog: user?.activeBacklog,
-              isVerified: user?.isVerified,
-              resumeUrl: user?.resumeUrl,
-              description: user?.description,
-              linkedin: user?.linkedin
+              id: companyProfile?.id,
+              email: companyProfile?.email,
+              role: companyProfile?.role,
+              branch: companyProfile?.branch,
+              year: companyProfile?.year,
+              cgpa: companyProfile?.cgpa,
+              activeBacklog: companyProfile?.activeBacklog,
+              isVerified: companyProfile?.isVerified,
+              resumeUrl: companyProfile?.resumeUrl,
+              description: companyProfile?.description,
+              linkedin: companyProfile?.linkedin
             }
           });
     }else if (user.role === 'STUDENT'){
+      const studentProfile = await prisma.student.findUnique({
+        where: {
+          email: user.email,
+          phone: user.phone
+        }
+      })
+      if(!studentProfile){
+        res.status(404).json({
+          success: false,
+          message: "Student profile doesn't exists."
+        })
+      }
+
         res.status(200).json({
             success: true,
             message: "Your profile got successfully",
             data: {
-                id: user?.id,
-                email: user?.email,
-                role: user?.role,
-                industry: user?.industry,
-                description: user?.description,
-                linkedin: user?.linkedin,
-                website: user?.website,
-                founded: user?.founded
+                id: studentProfile?.id,
+                email: studentProfile?.email,
+                role: studentProfile?.role,
+                industry: studentProfile?.industry,
+                description: studentProfile?.description,
+                linkedin: studentProfile?.linkedin,
+                website: studentProfile?.website,
+                founded: studentProfile?.founded
               }
           });
     }else{
+      const coordinatorProfile = await prisma.coordinator.findUnique({
+        where: {
+          email: user.email,
+          phone: user.phone
+        }
+      })
+      if(!coordinatorProfile){
+        res.status(404).json({
+          success: false,
+          message: "Coordinator profile doesn't exists."
+        })
+      }
+
         res.status(200).json({
             success: true,
             message: "Your profile got successfully",
             data: {
-                id: user?.id,
-                email: user?.email,
-                role: user?.role,
-                branch: user?.branch,
-                year: user?.year,
-                cgpa: user?.cgpa,
-                activeBacklog: user?.activeBacklog,
-                isVerified: user?.isVerified,
-                resumeUrl: user?.resumeUrl,
-                description: user?.description,
-                linkedin: user?.linkedin
+                id: coordinatorProfile?.id,
+                email: coordinatorProfile?.email,
+                role: coordinatorProfile?.role,
+                branch: coordinatorProfile?.branch,
+                year: coordinatorProfile?.year,
+                cgpa: coordinatorProfile?.cgpa,
+                activeBacklog: coordinatorProfile?.activeBacklog,
+                isVerified: coordinatorProfile?.isVerified,
+                resumeUrl: coordinatorProfile?.resumeUrl,
+                description: coordinatorProfile?.description,
+                linkedin: coordinatorProfile?.linkedin
             }
           });
     }
@@ -122,7 +162,7 @@ export const addProfile = async (
           });
       }
 
-      const newUser = await prisma.user.create({
+      const newStudentProfile = await prisma.student.create({
         name,
         email,
         phone,
@@ -137,7 +177,7 @@ export const addProfile = async (
     res.status(200).json({
         success: true,
         message: "Your profile added successfully",
-        data: newUser,
+        data: newStudentProfile,
       });
     }else if (user.role === "COMPANY") {
         const {
@@ -166,7 +206,7 @@ export const addProfile = async (
           });
         }
   
-        const newUser = await prisma.Company.create({
+        const newCompanyProfile = await prisma.company.create({
             name,
             email,
             phone,
@@ -180,7 +220,7 @@ export const addProfile = async (
       res.status(200).json({
           success: true,
           message: "Your profile added successfully",
-          data: newUser,
+          data: newCompanyProfile,
         });
     }else {
         const {
@@ -212,7 +252,7 @@ export const addProfile = async (
             });
         }
   
-        const newUser = await prisma.user.create({
+        const newCoordinatorProfile = await prisma.coordinator.create({
           name,
           email,
           phone,
@@ -227,7 +267,7 @@ export const addProfile = async (
       res.status(200).json({
           success: true,
           message: "Your profile added successfully",
-          data: newUser,
+          data: newCoordinatorProfile,
         });
       }
   } catch (err) {
@@ -254,6 +294,19 @@ export const updateProfile = async (
     }
 
     if(user.role === "STUDENT"){
+      const existingStudentProfile = await prisma.student.findFirst({
+        where: {
+          email: user.email,
+          phone: user.phone
+        }
+      })
+      if(!existingStudentProfile){
+        res.status(404).json({
+          success: false,
+          message: "Student profile doesn't exists"
+        })
+      }
+
         const {
             name,
             email,
@@ -267,29 +320,42 @@ export const updateProfile = async (
           } = req.body;
       
           const updatedData = {
-            name: name ? name : req.user?.name,
-            email: email ? email : req.user?.email,
-            phone: phone ? phone : req.user?.phone,
-            branch: branch ? branch : req.user?.branch,
-            year: year ? year : req.user?.year,
-            cgpa: cgpa ? cgpa : req.user?.cgpa,
-            active_backlog: active_backlog ? active_backlog : req.user?.active_backlog,
-            backlogs: backlogs ? backlogs : req.user?.backlogs,
-            resumeUrl: resumeUrl ? resumeUrl : req.user?.resumeUrl,
+            name: name ? name : existingStudentProfile?.name,
+            email: email ? email : existingStudentProfile?.email,
+            phone: phone ? phone : existingStudentProfile?.phone,
+            branch: branch ? branch : existingStudentProfile?.branch,
+            year: year ? year : existingStudentProfile?.year,
+            cgpa: cgpa ? cgpa : existingStudentProfile?.cgpa,
+            active_backlog: active_backlog ? active_backlog : existingStudentProfile?.active_backlog,
+            backlogs: backlogs ? backlogs : existingStudentProfile?.backlogs,
+            resumeUrl: resumeUrl ? resumeUrl : existingStudentProfile?.resumeUrl,
             isVerified: false
           };
       
-          const updatedUser = await prisma.user.update({
-            where: { email: email },
+          const updatedStudentProfile = await prisma.student.update({
+            where: { email: existingStudentProfile.email },
             updatedData,
           });
 
           res.status(200).json({
             success: true,
             message: "Your profile updated successfully",
-            data: updatedUser,
+            data: updatedStudentProfile,
           });
     }else if (user.role === "COMPANY") {
+      const existingCompanyProfile = await prisma.company.findFirst({
+        where: {
+          email: user.email,
+          phone: user.phone
+        }
+      })
+      if(!existingCompanyProfile){
+        res.status(404).json({
+          success: true,
+          message: "Company profile doesn't exists"
+        })
+      }
+
         const {
           name,
           email,
@@ -302,29 +368,44 @@ export const updateProfile = async (
         } = req.body;
 
         const updatedData = {
-            name: name ? name : req.user?.name,
-            email: email ? email : req.user?.email,
-            phone: phone ? phone : req.user?.phone,
-            industry: industry ? industry : req.user?.industry,
-            founded: founded ? founded : req.user?.founded,
-            description: description ? description : req.user?.description,
-            linkedin: linkedin ? linkedin : req.user?.linkedin,
-            website: website ? website : req.user?.website,
+            name: name ? name : existingCompanyProfile?.name,
+            email: email ? email : existingCompanyProfile?.email,
+            phone: phone ? phone : existingCompanyProfile?.phone,
+            industry: industry ? industry : existingCompanyProfile?.industry,
+            founded: founded ? founded : existingCompanyProfile?.founded,
+            description: description ? description : existingCompanyProfile?.description,
+            linkedin: linkedin ? linkedin : existingCompanyProfile?.linkedin,
+            website: website ? website : existingCompanyProfile?.website,
             isVerified: false
           };
   
-        const newUser = await prisma.user.update({
+        const updatedCompanyProfile = await prisma.company.update({
             where: {
-                email: user.email
-            }, updatedData
+                email: existingCompanyProfile.email,
+                phone: existingCompanyProfile.phone
+            }, 
+            updatedData
         })
         
       res.status(200).json({
           success: true,
           message: "Your profile added successfully",
-          data: newUser,
+          data: updatedCompanyProfile,
         });
     }else {
+      const existingCoordinatorProfile = await prisma.coordinator.findFirst({
+        where: {
+          email: user.email,
+          phone: user.phone
+        }
+      })
+      if(!existingCoordinatorProfile){
+        res.status(404).json({
+          success: false,
+          message: "Coordinator profile doesn't exists"
+        })
+      }
+
         const {
             name,
             email,
@@ -338,27 +419,30 @@ export const updateProfile = async (
           } = req.body;
       
           const updatedData = {
-            name: name ? name : req.user?.name,
-            email: email ? email : req.user?.email,
-            phone: phone ? phone : req.user?.phone,
-            branch: branch ? branch : req.user?.branch,
-            year: year ? year : req.user?.year,
-            cgpa: cgpa ? cgpa : req.user?.cgpa,
-            active_backlog: active_backlog ? active_backlog : req.user?.active_backlog,
-            backlogs: backlogs ? backlogs : req.user?.backlogs,
-            resumeUrl: resumeUrl ? resumeUrl : req.user?.resumeUrl,
+            name: name ? name : existingCoordinatorProfile?.name,
+            email: email ? email : existingCoordinatorProfile?.email,
+            phone: phone ? phone : existingCoordinatorProfile?.phone,
+            branch: branch ? branch : existingCoordinatorProfile?.branch,
+            year: year ? year : existingCoordinatorProfile?.year,
+            cgpa: cgpa ? cgpa : existingCoordinatorProfile?.cgpa,
+            active_backlog: active_backlog ? active_backlog : existingCoordinatorProfile?.active_backlog,
+            backlogs: backlogs ? backlogs : existingCoordinatorProfile?.backlogs,
+            resumeUrl: resumeUrl ? resumeUrl : existingCoordinatorProfile?.resumeUrl,
             isVerified: false
           };
       
-          const updatedUser = await prisma.user.update({
-            where: { email: email },
+          const updatedCoordinatorProfile = await prisma.coordinator.update({
+            where: { 
+              email: existingCoordinatorProfile.email,
+              phone: existingCoordinatorProfile.phone
+             },
             updatedData,
           });
 
           res.status(200).json({
             success: true,
             message: "Your profile updated successfully",
-            data: updatedUser,
+            data: updatedCoordinatorProfile,
           });
     }
   } catch (err) {
@@ -370,39 +454,57 @@ export const updateProfile = async (
   }
 };
 
-export const deleteProfile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const user = req.user;
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "User doesn't exists, Please register.",
-      });
-    }
+// export const deleteProfile = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const user = req.user;
+//     if (!user) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "User doesn't exists, Please register.",
+//       });
+//     }
 
-    const deletedUser = await prisma.user.delete({
-      where: {
-        email: user?.email,
-      },
-    });
+//     if(user.role === "STUDENT"){
+//       const existingProfile = await prisma.student.findFirst({
+//         where: {
+//           email: user.email,
+//           phone: user.phone
+//         }
+//       })
+//       if(!existingProfile){
+//         res.status(404).json({
+//           message: "Student not exists"
+//         })
+//       }
+//     }else if(user.role === "COMPANY"){
 
-    res.status(200).json({
-      success: true,
-      message: "Your profile deleted successfully",
-    });
-  } catch (err) {
-    console.log("Error in deletion of profile");
-    // return next(new AppError("Error in deletion of profile", 500));
-    return res.status(500).json({
-      success: false,
-      message: "Error in deletion of profile",
-    });
-  }
-};
+//     }else {
+
+//     }
+
+//     const deletedUser = await prisma.user.delete({
+//       where: {
+//         email: user?.email,
+//       },
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Your profile deleted successfully",
+//     });
+//   } catch (err) {
+//     console.log("Error in deletion of profile");
+//     // return next(new AppError("Error in deletion of profile", 500));
+//     return res.status(500).json({
+//       success: false,
+//       message: "Error in deletion of profile",
+//     });
+//   }
+// };
 
 
 

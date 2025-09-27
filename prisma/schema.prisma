@@ -72,6 +72,7 @@ model Company {
   id          String @id @default(uuid())
   name        String
   email       String
+  phone       String
   industry    String
   description String
   website     String
@@ -84,7 +85,7 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([name, industry, email])
+  @@index([name, industry, email, phone])
 }
 
 model Student {
@@ -110,7 +111,6 @@ model Coordinator {
   name             String
   email            String   @unique
   phone            String   @unique
-  password         String
   branch           Branch?
   year             Year?
   cgpa             Decimal? @db.Decimal(3, 2)
