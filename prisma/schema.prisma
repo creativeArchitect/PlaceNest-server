@@ -138,9 +138,9 @@ model Job {
   type        JobType
   title       String
   description String
-  role        String
+  position        String
   location    String
-  package     String
+  salary     String
   cgpaCutOff  Decimal   @db.Decimal(3, 2)
   deadline    DateTime
   status      JobStatus @default(ACTIVE)
